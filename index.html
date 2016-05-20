@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>dev* - to Type a Class</title>
+
+        <meta name="description" content="Thinking of type classes, Haskell, Scala and Java">
+        <meta name="author" content="Jyri-Matti 'Jüppe' Lähteenmäki">
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link rel="stylesheet" href="css/reveal.min.css">
+        <link rel="stylesheet" href="css/theme/serif.css" id="theme">
+
+        <!-- For syntax highlighting -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+        <script>
+            document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+
+        <style type="text/css">
+            code {
+                font-size: 17px !important;
+                line-height: 20px !important;
+            }
+        </style>
+        <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-20222288-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <!-- Any section element inside of this container is displayed as a slide -->
+            <div class="slides">
+                <section>
+                    <h1>to Type a Class</h1>
+                    <ul>
+                        <br />
+                        <li class="fragment"><del>ponies</del></li>
+                        <li class="fragment"><del>cat pics</del></li>
+                        <li class="fragment"><del>general awesomeness<br />(flying choppers, smoke alarms...)</del></li>
+                        <br />
+                        <li class="fragment">nice types</li>
+                        <li class="fragment">live coding!</li>
+                    </ul>
+                    <aside class="notes">
+                        <p>tässä presentaatiossa EI ole: ponies, cat pics, gen awesomeness</p>
+                        <p>tässä on: hyviä tyyppejä, live-koodausta!</p>
+                        <p>kissakuvat last-season, hyvissä esityksissä aina Dijkstra-quote</p>
+                    </aside>
+                </section>
+
+                <section>
+                    <img src="dijkstra.jpg" />
+                </section>
+
+                <section>
+                    <h2>payday</h2>
+                    <pre><code class="java" data-trim contenteditable>
+class Money {
+    int euro;
+    Money(int euro) { this.euro = euro; }
+}
+
+public static Money sum(List&lt;Money> xs) { ... }
+
+Money total = sum(Arrays.asList(new Money(1), new Money(2)));
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>general-purpose use FTW!</h2>
+                    <pre><code class="java" data-trim contenteditable>
+public static &lt;T> T sum(List&lt;T> ts) { ... }
+                    </code></pre>
+                    <p>T + T ???</p>
+                </section>
+
+                <section>
+                    <h2>the O-O way</h2>
+                    <p>implement interface</p>
+                    <pre><code class="java" data-trim contenteditable>
+interface Addable&lt;T> {
+    T add(T t);
+}
+
+public static &lt;T extends Addable&lt;T>> T sum(List&lt;T> ts) {
+    T ret = ts.get(0);
+    for (int i = 1; i &lt; ts.size(); ++i) { ret = ret.add(ts.get(i)); }
+    return ret;
+}
+                    </code></pre>
+                    <p style="font-size: 0.3em">small print: don't call with empty list</p>
+                    <aside class="notes">small-print ei relevanttia</aside>
+                </section>
+
+                <section>
+                    <h2>Profit!</h2>
+                    <p class="fragment">unless...</p>
+                    <ul>
+                        <li class="fragment">the creator of the <i>Money</i> class did not implement <i>Addable</i>?<br/>
+                            <small>like with class <i>Integer</i>...</small>
+                        </li>
+                        <li class="fragment"><i>add</i> conflicts with some other method?
+                            <small>Java does not offer mechanisms to get around this. Some langs do.</small>
+                        </li>
+                        <li class="fragment">more than one valid ways to add Money?
+                            <small>or: class Foo implements Bar&lt;A>, Bar&lt;B> ?</small><br />
+                            <small><del>works on my machine</del></small>  
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>right tool for the job?</h2>
+                        <br />
+                        <blockquote>The most disastrous thing that you can ever learn is your first programming language.<br /><small><i>Alan Kay</small></i></blockquote>
+                        <br />
+                        <blockquote>Always consider what you would do in Haskell<br/>
+                        <small><i><a href="http://akisaarinen.fi/blog/2012/09/10/haskellify-your-scala/">http://akisaarinen.fi/blog/2012/09/10/haskellify-your-scala/</a></i></small></blockquote>
+                        <br />
+                        <p class="fragment">REPL! (or look down...)</p>
+                        <aside class="notes">
+                        <pre><code class="haskell" data-trim contenteditable>
+Prelude> :t sum
+sum :: Num a => [a] -> a
+                        </code></pre>
+                        <pre><code class="haskell" data-trim contenteditable>
+Prelude> :info Num
+class Num a where
+  (+) :: a -> a -> a
+  ...
+                        </code></pre>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <pre><code class="haskell" data-trim contenteditable>
+Prelude> :t sum
+sum :: Num a => [a] -> a
+                        </code></pre>
+                        <pre><code class="haskell" data-trim contenteditable>
+Prelude> :info Num
+class Num a where
+  (+) :: a -> a -> a
+  ...
+                        </code></pre>
+                        <p>ah, <i>Num</i> knows how to add two <i>a</i>s...</p>
+                        <p>...but is this just like <i>Addable</i> in Java?</p>
+                        <p>...not quite...</p>
+                        <pre><code class="java" data-trim contenteditable>
+interface Addable&lt;T> {
+    T add(T t);
+}
+
+public static &lt;T extends Addable&lt;T>> T sum(List&lt;T> ts) {
+                        </code></pre>
+                    </section>
+                </section>
+
+                <section>
+                    <h2>Haskell?</h2>
+                    <p>Haskell doesn't have classes<br/>as we know them from other languages.</p>
+                    <p>And no inheritance.</p>
+                    <p class="fragment">In Haskell, a <br/><b>separate concept</b> (Num)<br/> defines how to add things.</p>
+                    <p class="fragment">One or more definitions of adding can be<br/><b>separately</b><br/>defined for a custom type <i>Money</i>.</p>
+                    <p class="fragment">Function arguments can be <i>restricted</i> with these<br/><b>type classes</b>.</p>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Haskellify your Java</h2>
+                        <pre><code class="java" data-trim contenteditable>
+interface Adder&lt;T> {
+    T add(T t1, T t2); // Look, mom, now with two arguments!
+}
+
+public static &lt;T> T sum(List&lt;T> ts, Adder&lt;T> adder) {
+    T ret = ts.get(0);
+    for (int i = 1; i &lt; ts.size(); ++i) { ret = adder.add(ret, ts.get(i)); }
+    return ret;
+}
+                        </code></pre>
+                        <p>now adding is separated from the class definition. Ha!</p>
+                        <p class="fragment">...but the trade-off is an additional function parameter...</p>
+                        <div class="fragment">
+                            <p>in Java, these two strategies are often combined,<br/>e.g. <i>Collections.sort</i></p>
+                            <pre><code class="java" data-trim contenteditable>
+public static &lt;T extends Comparable&lt;? super T>> void sort(List&lt;T> list) { ... }
+
+public static &lt;T> void sort(List&lt;T> list, Comparator&lt;? super T> c) { ... }
+                            </code></pre>
+                        </div>
+                    </section>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Scala?</h2>
+                        <p class="fragment">REPL! (or look down...)</p>
+                        <aside class="notes">
+                        <pre><code class="scala" data-trim contenteditable>
+scala> def sum[T](ts: List[T]): T = ???
+                        </code></pre>
+                        <p>same problem as in Java, forward!
+                        <pre><code class="scala" data-trim contenteditable>
+scala> trait Adder[T] { def add(t1: T, t2: T): T }
+defined trait Adder
+scala> def sum[T: Adder](ts: List[T]) = ts.reduce(implicitly[Adder[T]].add)
+sum: [T](ts: List[T])(implicit evidence$1: Adder[T])T
+                        </code></pre>
+                        <p>looks the same as in Java, but but...</p>
+                        <pre><code class="scala" data-trim contenteditable>
+scala> case class Money(euro: Int)
+defined class Money
+scala> implicit object MoneyAdder extends Adder[Money] {
+    def add(t1: Money, t2: Money) = Money(t1.euro + t2.euro)
+}
+defined module MoneyAdder
+scala> sum(List(Money(1), Money(2)))
+res1: Money = Money(3)
+                        </code></pre>
+                        </aside>
+                    </section>
+                    <section>
+                        <pre><code class="scala" data-trim contenteditable>
+scala> def sum[T](ts: List[T]): T = ???
+                        </code></pre>
+                        <p>same problem as in Java, forward!
+                        <pre><code class="scala" data-trim contenteditable>
+scala> trait Adder[T] { def add(t1: T, t2: T): T }
+defined trait Adder
+scala> def sum[T: Adder](ts: List[T]) = ts.reduce(implicitly[Adder[T]].add)
+sum: [T](ts: List[T])(implicit evidence$1: Adder[T])T
+                        </code></pre>
+                        <p>looks the same as in Java, but but...</p>
+                        <pre><code class="scala" data-trim contenteditable>
+scala> case class Money(euro: Int)
+defined class Money
+scala> implicit object MoneyAdder extends Adder[Money] {
+    def add(t1: Money, t2: Money) = Money(t1.euro + t2.euro)
+}
+defined module MoneyAdder
+scala> sum(List(Money(1), Money(2)))
+res1: Money = Money(3)
+                        </code></pre>
+                        <ul>
+                            <li><i>Adder</i> is defined outside <i>Money</i></li>
+                            <li>no manual parameter passing</li>
+                        </ul>
+                        <p>
+                    </section>
+                </section>
+
+                <section>
+                    <h2>desugar</h2>
+                    <small><i>"To translate the source code of a computer program (or its specification) into a more syntactically rigorous form"</i></small>
+                    <pre class="fragment"><code class="scala" data-trim contenteditable>
+def sum[T: Adder](ts: List[T]) = ts.reduce(implicitly[Adder[T]].add)
+                    </code></pre>
+                    <div class="fragment">
+                    ==
+                    <pre><code class="scala" data-trim contenteditable>
+def sum[T](ts: List[T])(implicit e: Adder[T]) = ts.reduce(implicitly[Adder[T]].add)
+                    </code></pre>
+                    </div>
+                    <div class="fragment">
+                    ==
+                    <pre><code class="scala" data-trim contenteditable>
+def sum[T](ts: List[T])(implicit e: Adder[T]) = ts.reduce(e.add)
+                    </code></pre>
+                    </div>
+                    <div class="fragment">
+                    <p>In Scala, the strategy is passed as a parameter just like in Java, but the compiler does it for you!</p>
+                    <p>Trivial to use a custom implementation instead of the <b>default</b>.</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>default?</h2>
+                    <p class="fragment">In Scala, the compiler <i>implicitly</i> passes suitable objects to functions. Often we don't need to care since the standard library contains many default <i>implicits</i>.</p>
+                    <p class="fragment">In Haskell, we use imports and hiding to select visible <i>type class instances</i>.</p>
+                    <p class="fragment">Both have many sensible defaults.</p>
+                </section>
+
+                <section>
+                    <h2>in the Java-land?</h2>
+                    <p class="fragment">we can select one of "type class instances" to be the "default instance" also in Java</p>
+                    <pre class="fragment"><code class="java" data-trim contenteditable>
+class MoneyAdder implements Adder&lt;Money> {
+    public Money add(Money t1, Money t2) { ... }
+}
+class AlternativeMoneyAdder implements Adder&lt;Money> {
+    public Money add(Money t1, Money t2) { ... }
+}
+class Money implements Addable&lt;Money> {
+    private static final DEFAULT_ADDER = new MoneyAdder();
+    public Money add(Money another) {
+        return DEFAULT_ADDER.add(this, another);
+    }
+}
+                    </code></pre>
+                </section>
+
+                <section>
+                    <p>a more familiar example may be Comparator/Comparable</p>
+                    <pre><code class="java" data-trim contenteditable>
+public interface Comparator&lt;T> {
+    int compare(T o1, T o2);
+}
+public interface Comparable&lt;T> {
+    int compareTo(T o);
+}
+                    </code></pre>
+                    <p>(ever wondered why there's "two of them"?)</p>
+                    <p class="fragment"><i>Comparator</i> is kind of a<br/><b> type class</b>.</p>
+                    <p class="fragment">Each <i>implements Comparator</i> is like an <b>instance</b> of this type class.</p>
+                    <p class="fragment"><i>Comparable</i> is a way to pick a <b>default instance</b> from the Comparator type class.</p>
+                </section>
+
+                <section>
+                    <h2>always a default?</h2>
+                    <p class="fragment">many times there's no sensible default,<br/>so better not to pick one.</p>
+                    <pre class="fragment"><code class="java" data-trim contenteditable>
+class Employee {
+    String firstName;
+    String lastName;
+}
+class EmployeeComparator1 implements Comparator&lt;Employee> {
+    int compare(T o1, T o2) { return o1.firstName.compareTo(o2.firstName); }
+}
+class EmployeeComparator2 implements Comparator&lt;Employee> {
+    int compare(T o1, T o2) { return o1.lastName.compareTo(o2.lastName); }
+}
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Java: toString</h2>
+                    <ul>
+                        <li class="fragment">one of Java screwups</li>
+                        <li class="fragment">every type has an implicit default instance of "<i>toString</i> type class"</li>
+                    </ul>
+                    <img class="fragment" src="Picard-facepalm.jpg" />
+                    <blockquote class="fragment">Programming is like sex. One mistake and you have to support it for the rest of your life.<br/><small><i>Michael Sinz</small></i></blockquote>
+                    <aside class="notes">
+                        tai equals...
+                    </aside>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Haskell: Show</h2>
+                        <p class="fragment">REPL! (or look down...)</p>
+                        <aside class="notes">
+                        <pre><code class="haskell" data-trim contenteditable>
+Prelude> data Money = Money Int
+Prelude> print (Money 42)
+
+&lt;interactive>:2:1:
+    No instance for (Show Money) arising from a use of `print'
+    Possible fix: add an instance declaration for (Show Money)
+    In the expression: print (Money 42)
+    In an equation for `it': it = print (Money 42)
+Prelude> instance Show Money where show (Money a) = "Rahaa " ++ show a ++ "€"
+Prelude> print (Money 42)
+Rahaa 42€
+                        </code></pre>
+                        </aside>
+                    </section>
+                    <section>
+                        <pre><code class="haskell" data-trim contenteditable>
+Prelude> data Money = Money Int
+Prelude> print (Money 42)
+
+&lt;interactive>:2:1:
+    No instance for (Show Money) arising from a use of `print'
+    Possible fix: add an instance declaration for (Show Money)
+    In the expression: print (Money 42)
+    In an equation for `it': it = print (Money 42)
+Prelude> instance Show Money where show (Money a) = "I've got " ++ show a ++ "€"
+Prelude> print (Money 42)
+I've got 42€
+                        </code></pre>
+                    </section>
+                </section>
+
+                <section>
+                    <h2>conclusion?</h2>
+                    <ul>
+                        <li class="fragment">always try to make type class instances (<i>Comparator</i>)</li>
+                        <li class="fragment">be wary of lifting one to a default instance (<i>Comparable</i>)</li>
+                        <li class="fragment"><q>do as you would do in Haskell</q></li>
+                        <li class="fragment"><q>do as Dijkstra would approve</q></li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h1>thanks.</h1>
+                    <h3>- Jüppe</h3>
+                </section>
+
+            </div>
+
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.min.js"></script>
+
+        <script>
+
+            // Full list of configuration options available here:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+                transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+                // Optional libraries used to extend on reveal.js
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+
+        </script>
+
+    </body>
+</html>
